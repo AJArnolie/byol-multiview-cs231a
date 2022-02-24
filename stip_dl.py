@@ -8,9 +8,9 @@ import torch.utils.data as data
 ​
 class STIPImgDataset(data.Dataset):
   def __init__(self):
-    self.fps = 1                    # Frame Rate of sampled clips    
+    self.fps = 2                    # Frame Rate of sampled clips    
     self.sample_interval = 300      # Interval at which a new set of frames is sampled
-    self.frame_count = 32           # Number of frames per set of clips
+    self.frame_count = 8            # Number of frames per set of clips
     self.offset_update_rate = 500   # Interval at which offsets are updated
     
     self.data_path = '/vision/u/ajarno/STIP_dataset'   # Location at which frames and timestamp data are stored
@@ -55,6 +55,7 @@ class STIPImgDataset(data.Dataset):
             data += [[f_number + offset[0], f_number, f_number + offset[1]]]
         else:
             invalid_count += 1    
+      
       # Samples aggregated list based on desired fps, frame count, and sample interval
       data = np.array(data)
       for i in range(0, data.shape[0] - (step * frame_count), self.sample_interval):
@@ -81,8 +82,7 @@ class STIPImgDataset(data.Dataset):
     for camera in img_paths:
       frames = []
       for path in camera:
-        img = cv2.resize(cv2.imread(path), (224, 224))
+        img = cv2.resize(cv2.imread(path), (256, 256))
         frames += [img.transpose((2,0,1))]
-      cameras += [frames]
-    cameras = torch.tensor(cameras)
-    return {'video': vid, 'frames': cameras}
+      cameras += [torch.tensor(frames).permute((1, 0, 2, 3))]
+    return {'L': cameras[0], 'C': cameras[1], 'R': cameras[2]}
