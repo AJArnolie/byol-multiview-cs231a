@@ -53,7 +53,7 @@ class NuScenesImgDataset(data.Dataset):
     for camera in img_paths:
       frames = []
       for path in camera:
-        img = cv2.resize(cv2.imread(self.data_path + path), (224, 224))
+        img = cv2.resize(cv2.imread(self.data_path + path), (256, 256))
         frames += [img.transpose((2,0,1))]
       cameras += [torch.tensor(frames).permute((1, 0, 2, 3))]
     return {'L': cameras[0], 'C': cameras[1], 'R': cameras[2]}
