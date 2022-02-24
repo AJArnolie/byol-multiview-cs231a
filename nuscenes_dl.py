@@ -8,9 +8,9 @@ from nuscenes.nuscenes import NuScenes
 ​
 class NuScenesImgDataset(data.Dataset):
   def __init__(self, name="v1.0-trainval"):
-    self.fps = 2                    # Desired Frame Rate of sampled clips    
+    self.fps = 1                    # Desired Frame Rate of sampled clips    
     self.sample_interval = 4        # Interval at which a new set of frames is sampled
-    self.frame_count = 32           # Number of frames per set of clips
+    self.frame_count = 8            # Number of frames per set of clips
     
     self.data_path = '/vision/u/ajarno/NuScenes/nuScenes/'   # Location at which frames are stored
     self.nusc = NuScenes(version=name, dataroot=self.data_path, verbose=False)
@@ -45,7 +45,7 @@ class NuScenesImgDataset(data.Dataset):
 ​
   def __getitem__(self, idx):
     ''' Returns dict containing name of video and tensor of expected shape: (num_cameras, num_channels, num_frames, W, H)
-        Current Settings: (3, 32, 3, 224, 224)
+        Current Settings: (3, 8, 3, 256, 256)
     '''
     fids = self.data[idx]
     img_paths = [fids[0], fids[1], fids[2]]
@@ -55,6 +55,5 @@ class NuScenesImgDataset(data.Dataset):
       for path in camera:
         img = cv2.resize(cv2.imread(self.data_path + path), (224, 224))
         frames += [img.transpose((2,0,1))]
-      cameras += [frames]
-    cameras = torch.tensor(cameras)
-    return {'frames': cameras}
+      cameras += [torch.tensor(frames).permute((1, 0, 2, 3))]
+    return {'L': cameras[0], 'C': cameras[1], 'R': cameras[2]}
