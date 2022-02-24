@@ -40,10 +40,20 @@ def get_data_loader(opt):
     collate_fn = nuscenes_collate
   else:
     raise NotImplementedError('Sorry, we currently only support STIP and NuScenes.')
+    
+  train_size = int(0.8 * len(dset))
+  test_size = len(dset) - train_size
+  train_dset, test_dset = torch.utils.data.random_split(dset, [train_size, test_size])
 
-  return data.DataLoader(dset,
+  return data.DataLoader(train_dset,
     batch_size=opt.batch_size,
-    shuffle=opt.is_train,
+    shuffle=True,
+    num_workers=opt.n_workers,
+    pin_memory=True,
+    collate_fn=collate_fn,),
+    data.DataLoader(test_dset,
+    batch_size=opt.batch_size,
+    shuffle=False,
     num_workers=opt.n_workers,
     pin_memory=True,
     collate_fn=collate_fn,)
