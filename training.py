@@ -4,7 +4,7 @@ import torch
 import tqdm
 import torch.nn as nn
 from get_dataloaders import get_data_loader
-from stereo_models import BYOLMultiView, Loss
+from models import BYOLMultiView, Loss
 
 def train():
     EPOCHS = 30
