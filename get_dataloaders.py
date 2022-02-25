@@ -10,51 +10,46 @@ try:
   from .nuscenes_dl import NuScenesImgDataset
 except:
   from nuscenes_dl import NuScenesImgDataset
+ 
+def collate(batch):
+  ''' Expected shape of L,R,C: (num_channels, num_frames, width, height)'''
+  return {'L': torch.stack([each['L'] for each in batch], 0),
+          'C': torch.stack([each['C'] for each in batch], 0),
+          'R': torch.stack([each['R'] for each in batch], 0)}
 
-def stip_collate(batch):
-  ''' Expected shape of 'frames': (num_cameras, num_channels, num_frames, width, height)'''
-  vids = []
-  for each in batch:
-    vids += each['video'],
-  return {'video': torch.stack(vids), 'frames': torch.stack([each['frames'] for each in batch], 0)}
-
-def nuscenes_collate(batch):
-  ''' Expected shape of 'frames': (num_cameras, num_channels, num_frames, width, height)'''
-  return {'video': [], 'frames': torch.stack([each['frames'] for each in batch], 0)}
-
-def get_data_loader(opt):
-  if opt.dset_name.lower() == 'stip':
+def get_data_loader(name="STIP", batch_size=4, num_workers=4, pct_train=0.8):
+  if name.lower() == 'stip':
     print('Building STIPImgDataset...')
     dset = STIPImgDataset()
     print('Built STIPImgDataset.')
-    collate_fn = stip_collate
-  elif opt.dset_name.lower() == 'nuscenesmini':
+    collate_fn = collate
+  elif name.lower() == 'nuscenesmini':
     print('Building Mini NuScenesImgDataset...')
     dset = NuScenesImgDataset(name="v1.0-mini")
     print('Built Mini NuscenesImgDataset.')
-    collate_fn = nuscenes_collate
-  elif opt.dset_name.lower() == 'nuscenes':
+    collate_fn = collate
+  elif name.lower() == 'nuscenes':
     print('Building NuScenesImgDataset...')
     dset = NuScenesImgDataset()
     print('Built NuscenesImgDataset.')
-    collate_fn = nuscenes_collate
+    collate_fn = collate
   else:
     raise NotImplementedError('Sorry, we currently only support STIP and NuScenes.')
     
-  train_size = int(0.8 * len(dset))
+  train_size = int(pct_train * len(dset))
   test_size = len(dset) - train_size
   train_dset, test_dset = torch.utils.data.random_split(dset, [train_size, test_size])
 
   return data.DataLoader(train_dset,
-    batch_size=opt.batch_size,
+    batch_size=batch_size,
     shuffle=True,
-    num_workers=opt.n_workers,
+    num_workers=num_workers,
     pin_memory=True,
     collate_fn=collate_fn,),
     data.DataLoader(test_dset,
-    batch_size=opt.batch_size,
+    batch_size=batch_size,
     shuffle=False,
-    num_workers=opt.n_workers,
+    num_workers=num_workers,
     pin_memory=True,
     collate_fn=collate_fn,)
 
