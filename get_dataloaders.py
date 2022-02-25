@@ -34,7 +34,7 @@ def get_data_loader(name="STIP", batch_size=4, num_workers=4, pct_train=0.8):
     print('Built NuscenesImgDataset.')
     collate_fn = collate
   else:
-    raise NotImplementedError('Sorry, we currently only support STIP and NuScenes.')
+    raise NotImplementedError('Sorry, only STIP and NuScenes datasets are currently supported.')
     
   train_size = int(pct_train * len(dset))
   test_size = len(dset) - train_size
@@ -56,14 +56,13 @@ def get_data_loader(name="STIP", batch_size=4, num_workers=4, pct_train=0.8):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument('--is-train', type=bool, default=True)
   parser.add_argument('--dset-name', type=str, default='STIP')
   parser.add_argument('--batch-size', type=int, default=4)
   parser.add_argument('--n-workers', type=int, default=0)
   opt = parser.parse_args()
 
   if True: # For testing purposes
-    dloader = get_data_loader(opt)
+    dloader = get_data_loader(opt.dset_name, opt.batch_size, opt.n_workers)
     for i in range(1):
         n = random.randint(0, len(dloader.dataset) - 1) # Select random index
         print(dloader.dataset.__getitem__(n)['frames'].shape)
