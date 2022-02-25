@@ -2,14 +2,14 @@ import numpy as np
 import torch
 import tqdm
 import torch.nn as nn
-from dataloader import STIPImgDataset
-from stereo_models import BYOLMultiView, Loss
+from get_dataloaders import get_data_loader
+from models import BYOLMultiView, Loss
 
 def evaluate():
     EPOCHS = 30
     OUTPUT_DIR = "/vision/u/ajarno/cs231a/output"
     
-    train_dataloader, val_dataloader = get_data_loaders("diff_dataset", batch_size=4, shuffle=False, num_workers=4)
+    train_dataloader, val_dataloader = get_data_loader("NuScenes", batch_size=4, num_workers=4)
     device = "cuda:0"
     model = BYOLMultiView(400, 400).to(device)
     for epoch in range(EPOCHS):
